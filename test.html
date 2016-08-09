@@ -1,0 +1,146 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>JSON-Transpiler Test</title>
+<style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    .test { border: 0 solid #AAA; border-width: 1px 0; margin: -1px 20px 0; padding: 20px 0; font: 11px/1.2 "Source Code Pro", Consolas, monospace; }
+    .test::after { content: ''; clear: both; display: block; }
+    .test pre { float: left; width: 30%; background: #EEE; margin: 0 5% 0 0; padding: 9px; border: 1px solid #EEE; box-sizing: border-box; }
+    .test .target { margin: 0; background: none; border-color: #DDD; }
+    .test .correct { background: rgba(0, 255, 0, 0.1); }
+    .test .wrong { background: rgba(255, 0, 0, 0.1); }
+</style>
+<script src="./json-transpiler.js"></script>
+<script>
+    /*
+    var testcases = [
+            'prop',
+            'prop[0]',
+            'prop1.prop2',
+            'prop1[1].prop2',
+            'prop1.prop2[2]',
+            'prop1[3].prop2[4]'
+    ];
+    var answer = document.getElementById('answer');
+    testcases.forEach(function (testcase) {
+        var testTarget = {root: true};
+        var result = parser(testTarget, testcase);
+        result.parent[result.key] = 'Success';
+        answer.innerText += testcase + ': ' + JSON.stringify(testTarget) + '\n';
+    });
+    */
+    var source, map, funcArr = [];
+    var test = function (id, answer) {
+        var $test = document.getElementById(id);
+        var $source = $test.querySelector('.source');
+        var $map = $test.querySelector('.map');
+        var $target = $test.querySelector('.target');
+        $source.innerText = JSON.stringify(source, null, 4);
+        $map.innerText = JSON.stringify(map, function (key, val) {
+            if (typeof val == 'function') {
+                funcArr.push(val.toString());
+                return '$func' + (funcArr.length - 1);
+            } else {
+                return val;
+            }
+        }, 4);
+        if (funcArr.length > 0) {
+            var text = $map.innerText;
+            funcArr.forEach(function (func, idx) {
+                text = text.replace('"$func' + idx + '"', func);
+            });
+            $map.innerText = text;
+            funcArr = [];
+        }
+        var result = jsonTranspiler(source, map);
+        $target.innerText = JSON.stringify(result, null, 4);
+    };
+</script>
+<div id="case1" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {
+            'old_name': 'Hello world',
+            'should_be_number': '3.14159',
+            'inverse_it': true,
+            'make_it_boolean': 1
+        };
+        map = {
+            'old_name': 'new_name',
+            'should_be_number': '+it_is_number',
+            'inverse_it': '!inversed',
+            'make_it_boolean': '!!it_is_boolean'
+        };
+        test('case1');
+    </script>
+</div>
+<div id="case2" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {
+            'foo': 'hello world'
+        };
+        map = {
+            'foo': function (value) {
+                return {
+                    key: 'bar',
+                    value: value.toUpperCase()
+                };
+            }
+        };
+        test('case2');
+    </script>
+</div>
+<div id="case3" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {
+            'foo': ['hello', 'world'],
+            'bar': {
+                'baz': 'goodbye',
+                'qux': 'yesterday'
+            }
+        };
+        map = {
+            'foo[0]': 'foo.first',
+            'foo[1]': 'foo.second',
+            'bar.baz': 'arr[0]',
+            'bar.qux': 'arr[1]'
+        };
+        test('case3');
+    </script>
+</div>
+<div id="case4" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {
+            'to_recurse': [
+                {
+                    'name': 'foo',
+                    'age': 3
+                }, {
+                    'name': 'bar',
+                    'age': 4
+                }
+            ]
+        };
+        map = {
+            'to_recurse[]': {
+                key: 'recursed',
+                map: {
+                    'name': 'items.name',
+                    'age': 'items.age'
+                }
+            }
+        };
+        test('case4');
+    </script>
+</div>
