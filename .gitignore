@@ -1,0 +1,5 @@
+# Sublime Text project files
+*.sublime-*
+
+# JetBrains IDE project files
+.idea
