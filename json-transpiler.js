@@ -10,14 +10,13 @@ var jsonTranspiler = function (source, target, map) {
         var parent = object, key = '';
         var tokens = path.split('.'), len = tokens.length;
         tokens.forEach(function (token, idx) {
-            // TODO: push
-            var groups = /(\w+)(?:\[(\d+)])?$/.exec(token), arrIdx = groups[2], isArray = !!arrIdx;
+            var groups = /(\w+)(\[(\d+)?])?$/.exec(token), isArray = !!groups[2], arrIdx = groups[3];
             key = groups[1];
 
             if (isArray) {
                 if (makeCrumbs && !(parent[key] instanceof Array)) parent[key] = [];
                 parent = parent[key];
-                key = arrIdx;
+                key = arrIdx || parent.length;
             }
 
             if (idx < len - 1) {
