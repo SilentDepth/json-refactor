@@ -25,10 +25,12 @@ var jsonTranspiler = function (source, target, map) {
             }
         });
 
-        return {
-            parent: parent,
-            key: key
-        };
+        if (parent) {
+            return {
+                parent: parent,
+                key: key
+            };
+        }
     };
 
     var getter = function (sourceKey) {
@@ -40,10 +42,12 @@ var jsonTranspiler = function (source, target, map) {
 
         var pathObj = parser(source, sourceKey);
 
-        return {
-            needIteration: needIteration,
-            value: pathObj.parent[pathObj.key]
-        };
+        if (pathObj) {
+            return {
+                needIteration: needIteration,
+                value: pathObj.parent[pathObj.key]
+            };
+        }
     };
 
     var setter = function (targetKey, value) {
@@ -51,6 +55,7 @@ var jsonTranspiler = function (source, target, map) {
 
         if (typeof targetKey == 'function') {
             var result = targetKey(value);
+            if (result === undefined) return;
             targetKey = result.key;
             value = result.value;
         } else if (/^!/.test(targetKey)) {
@@ -67,13 +72,14 @@ var jsonTranspiler = function (source, target, map) {
         }
 
         var pathObj = parser(target, targetKey, true);
-        pathObj.parent[pathObj.key] = value;
+        pathObj.parent[pathObj.key] = value instanceof Object ? JSON.parse(JSON.stringify(value)) : value;
     };
 
     for (var sourceKey in map) {
         if (!map.hasOwnProperty(sourceKey)) continue;
 
         var got = getter(sourceKey);
+        if (got === undefined) continue;
         if (got.needIteration) {
             got.value.forEach(function (source) {
                 var transpiled = jsonTranspiler(source, map[sourceKey].map);
