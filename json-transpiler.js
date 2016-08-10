@@ -59,7 +59,7 @@ var jsonTranspiler = function (source, target, map) {
             targetKey = result.key;
             value = result.value;
         } else if (/^!/.test(targetKey)) {
-            value = ['1', 'true', 'yes', 't', 'y'].indexOf(value.toString().toLowerCase()) >= 0;
+            value = ['1', 'true', 'yes', 't', 'y'].indexOf(('' + value).toLowerCase()) >= 0;
             if (/^!!/.test(targetKey)) {
                 targetKey = targetKey.slice(2);
             } else {
