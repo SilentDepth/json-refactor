@@ -47,16 +47,20 @@ var jsonTranspiler = function (source, target, map) {
     };
 
     var setter = function (targetKey, value) {
+        if (value === undefined) return;
+
         if (typeof targetKey == 'function') {
             var result = targetKey(value);
             targetKey = result.key;
             value = result.value;
-        } else if (/^!!/.test(targetKey)) {
-            value = !!value;
-            targetKey = targetKey.slice(2);
         } else if (/^!/.test(targetKey)) {
-            value = !value;
-            targetKey = targetKey.slice(1);
+            value = ['1', 'true', 'yes', 't', 'y'].indexOf(value.toString().toLowerCase()) >= 0;
+            if (/^!!/.test(targetKey)) {
+                targetKey = targetKey.slice(2);
+            } else {
+                value = !value;
+                targetKey = targetKey.slice(1);
+            }
         } else if (/^\+/.test(targetKey)) {
             value = +value;
             targetKey = targetKey.slice(1);
