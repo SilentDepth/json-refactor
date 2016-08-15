@@ -1,10 +1,11 @@
 "use strict";
 
-var jsonTranspiler = function (source, target, map) {
+var jsonRefactor = function (source, target, map) {
     if (arguments.length == 2) {
         map = arguments[1];
         target = {};
     }
+    var setUndefined = (map['__json-refactor__'] && map['__json-refactor__'].setUndefined) || false;
 
     var parser = function (object, path, makeCrumbs) {
         var parent = object, key = '';
@@ -51,24 +52,28 @@ var jsonTranspiler = function (source, target, map) {
     };
 
     var setter = function (targetKey, value) {
-        if (value === undefined) return;
-
-        if (typeof targetKey == 'function') {
-            var result = targetKey(value);
-            if (result === undefined) return;
-            targetKey = result.key;
-            value = result.value;
-        } else if (/^!/.test(targetKey)) {
-            value = ['1', 'true', 'yes', 't', 'y'].indexOf(('' + value).toLowerCase()) >= 0;
-            if (/^!!/.test(targetKey)) {
-                targetKey = targetKey.slice(2);
-            } else {
-                value = !value;
+        if (value === undefined) {
+            if (setUndefined) {
+                value = null;
+            } else return;
+        } else {
+            if (typeof targetKey == 'function') {
+                var result = targetKey(value);
+                if (result === undefined) return;
+                targetKey = result.key;
+                value = result.value;
+            } else if (/^!/.test(targetKey)) {
+                value = ['1', 'true', 'yes', 't', 'y'].indexOf(('' + value).toLowerCase()) >= 0;
+                if (/^!!/.test(targetKey)) {
+                    targetKey = targetKey.slice(2);
+                } else {
+                    value = !value;
+                    targetKey = targetKey.slice(1);
+                }
+            } else if (/^\+/.test(targetKey)) {
+                value = +value;
                 targetKey = targetKey.slice(1);
             }
-        } else if (/^\+/.test(targetKey)) {
-            value = +value;
-            targetKey = targetKey.slice(1);
         }
 
         var pathObj = parser(target, targetKey, true);
@@ -76,14 +81,17 @@ var jsonTranspiler = function (source, target, map) {
     };
 
     for (var sourceKey in map) {
-        if (!map.hasOwnProperty(sourceKey)) continue;
+        if (!map.hasOwnProperty(sourceKey) || sourceKey == '__json-refactor__') continue;
 
         var got = getter(sourceKey);
-        if (got === undefined) continue;
+        if (got === undefined) {
+            if (setUndefined) got = {value: undefined};
+            else continue;
+        }
         if (got.needIteration) {
             got.value.forEach(function (source) {
-                var transpiled = jsonTranspiler(source, map[sourceKey].map);
-                setter(map[sourceKey].key, transpiled);
+                var refactored = jsonRefactor(source, map[sourceKey].map);
+                setter(map[sourceKey].key, refactored);
             }, this);
         } else {
             setter(map[sourceKey], got.value);

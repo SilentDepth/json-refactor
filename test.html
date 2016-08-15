@@ -52,7 +52,7 @@
             $map.innerText = text;
             funcArr = [];
         }
-        var result = jsonTranspiler(source, map);
+        var result = jsonRefactor(source, map);
         $target.innerText = JSON.stringify(result, null, 4);
     };
     var compare = function (a, b) {
@@ -232,6 +232,19 @@
             }
         };
         test('case6');
+    </script>
+</div>
+<div id="case7" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {};
+        map = {
+            '__json-refactor__': {setUndefined: true},
+            'foo': 'foo'
+        };
+        test('case7');
     </script>
 </div>
 
