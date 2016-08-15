@@ -1,0 +1,49 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Executor</title>
+<style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; font-size: 0; }
+    .container { display: flex; height: 100%; }
+    .wrapper { height: 100%; flex: 1 1 30%; box-sizing: border-box; border-left: 1px solid #999; position: relative; }
+    .wrapper:first-child { border: none; }
+    h2, textarea { font-family: "Source Code Pro", Consolas, monospace; box-sizing: border-box; background: #FFF; width: 100%; }
+    h2 { position: absolute; top: 0; left: 0; margin: 0; padding: 12px; font-weight: bold; font-size: 16px; line-height: 1; }
+    textarea { height: 100%; border: none; padding: 40px 1em 1em; outline: none; font-size: 12px; line-height: 1.5; resize: none; }
+    .error { position: absolute; bottom: 0; left: 0; margin: 0; padding: 0 1em; width: 100%; font-size: 12px; line-height: 1.8; box-sizing: border-box; background: #FEE; color: red; }
+</style>
+<script src="./json-refactor.js"></script>
+<div class="container">
+    <div class="wrapper">
+        <h2>source</h2>
+        <textarea id="source"></textarea>
+    </div>
+    <div class="wrapper">
+        <h2>map</h2>
+        <textarea id="map"></textarea>
+    </div>
+    <div class="wrapper">
+        <h2>target</h2>
+        <textarea id="target" disabled></textarea>
+        <p class="error"></p>
+    </div>
+</div>
+<script>
+    var $source = document.getElementById('source');
+    var $map = document.getElementById('map');
+    var $target = document.getElementById('target');
+    var $error = document.querySelector('.error');
+    document.querySelector('.container').addEventListener('input', function () {
+        var source = $source.value.trim();
+        var map = $map.value.trim();
+        if (source == '' || map == '') return;
+        if (source[0] != '{' || source[source.length - 1] != '}') return;
+        if (map[0] != '{' || map[map.length - 1] != '}') return;
+        try {
+            $target.value = JSON.stringify(jsonRefactor(eval('(' + $source.value + ')'), eval('(' + $map.value + ')')), null, 4);
+            $error.innerText = '';
+        } catch (e) {
+            $target.value = '';
+            $error.innerText = e.message;
+        }
+    });
+</script>
