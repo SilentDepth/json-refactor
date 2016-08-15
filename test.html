@@ -52,8 +52,11 @@
             $map.innerText = text;
             funcArr = [];
         }
-        var result = jsonTranspiler(source, map);
+        var result = jsonRefactor(source, map);
         $target.innerText = JSON.stringify(result, null, 4);
+    };
+    var compare = function (a, b) {
+
     };
 </script>
 <div id="case1" class="test">
@@ -144,3 +147,116 @@
         test('case4');
     </script>
 </div>
+<div id="case5" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {
+            'true1': 1,
+            'true2': '1',
+            'true3': true,
+            'true4': 'true',
+            'true5': 't',
+            'true6': 'yes',
+            'true7': 'y',
+            'true8': 'TRUE',
+            'true9': 'T',
+            'true10': 'YES',
+            'true11': 'Y',
+            'false1': 0,
+            'false2': '0',
+            'false3': false,
+            'false4': 'false',
+            'false5': 'f',
+            'false6': 'no',
+            'false7': 'n',
+            'false8': 'FALSE',
+            'false9': 'F',
+            'false10': 'NO',
+            'false11': 'N',
+            'false12': '',
+            'false13': null,
+            'false14': 'null',
+            'false15': 'whatever'
+        };
+        map = {
+            'true1': '!!true1',
+            'true2': '!!true2',
+            'true3': '!!true3',
+            'true4': '!!true4',
+            'true5': '!!true5',
+            'true6': '!!true6',
+            'true7': '!!true7',
+            'true8': '!!true8',
+            'true9': '!!true9',
+            'true10': '!!true10',
+            'true11': '!!true11',
+            'false1': '!!false1',
+            'false2': '!!false2',
+            'false3': '!!false3',
+            'false4': '!!false4',
+            'false5': '!!false5',
+            'false6': '!!false6',
+            'false7': '!!false7',
+            'false8': '!!false8',
+            'false9': '!!false9',
+            'false10': '!!false10',
+            'false11': '!!false11',
+            'false12': '!!false12',
+            'false13': '!!false13',
+            'false14': '!!false14',
+            'false15': '!!false15'
+        };
+        test('case5');
+    </script>
+</div>
+<div id="case6" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {
+            'foo': [
+                {'bar': 1},
+                {'baz': 2}
+            ]
+        };
+        map = {
+            'foo[]': {
+                key: 'new_foo[]',
+                map: {
+                    'bar': 'bar',
+                    'baz': 'baz'
+                }
+            }
+        };
+        test('case6');
+    </script>
+</div>
+<div id="case7" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {};
+        map = {
+            '__json-refactor__': {setUndefined: true},
+            'foo': 'foo'
+        };
+        test('case7');
+    </script>
+</div>
+
+<!--
+<div id="case" class="test">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+    <script>
+        source = {};
+        map = {};
+        test('case');
+    </script>
+</div>
+-->
