@@ -3,260 +3,286 @@
 <title>JSON-Transpiler Test</title>
 <style>
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    #template { display: none; }
     .test { border: 0 solid #AAA; border-width: 1px 0; margin: -1px auto 0; padding: 20px 0; font: 11px/1.2 "Source Code Pro", Consolas, monospace; width: 1240px; }
     .test::after { content: ''; clear: both; display: block; }
-    .test pre { float: left; width: 400px; background: #EEE; margin: 0 20px 0 0; padding: 9px; border: 1px solid #EEE; box-sizing: border-box; }
-    .test .target { margin: 0; background: none; border-color: #DDD; }
+    .test pre { float: left; width: 400px; background: #EEE; margin: 0 20px 0 0; padding: 10px; box-sizing: border-box; }
+    .test .target { margin: 0; }
     .test .correct { background: rgba(0, 255, 0, 0.1); }
     .test .wrong { background: rgba(255, 0, 0, 0.1); }
 </style>
-<script src="./json-transpiler.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<script src="./json-refactor.js"></script>
+
+<div id="template">
+    <pre class="source"></pre>
+    <pre class="map"></pre>
+    <pre class="target"></pre>
+</div>
+<div id="container"></div>
+
 <script>
-    /*
-    var testcases = [
-            'prop',
-            'prop[0]',
-            'prop1.prop2',
-            'prop1[1].prop2',
-            'prop1.prop2[2]',
-            'prop1[3].prop2[4]'
+    var $template = $('#template');
+    var $container = $('#container');
+    var tests = [
+        {
+            source: {
+                'old_name': 'Hello world',
+                'should_be_number': '3.14159',
+                'inverse_it': true,
+                'make_it_boolean': 1
+            },
+            map: {
+                'old_name': 'new_name',
+                'should_be_number': '+it_is_number',
+                'inverse_it': '!inversed',
+                'make_it_boolean': '!!it_is_boolean'
+            },
+            answer: {
+                'new_name': 'Hello world',
+                'it_is_number': 3.14159,
+                'inversed': false,
+                'it_is_boolean': true
+            }
+        },
+        {
+            source: {
+                'foo': 'hello world'
+            },
+            map: {
+                'foo': function (value) {
+                    return {
+                        key: 'bar',
+                        value: value.toUpperCase()
+                    };
+                }
+            },
+            answer: {
+                'bar': 'HELLO WORLD'
+            }
+        },
+        {
+            source: {
+                'foo': ['hello', 'world'],
+                'bar': {
+                    'baz': 'goodbye',
+                    'qux': 'yesterday'
+                }
+            },
+            map: {
+                'foo[0]': 'foo.first',
+                'foo[1]': 'foo.second',
+                'bar.baz': 'arr[0]',
+                'bar.qux': 'arr[1]'
+            },
+            answer: {
+                'foo': {
+                    'first': 'hello',
+                    'second': 'world'
+                },
+                'arr': ['goodbye', 'yesterday']
+            }
+        },
+        {
+            source: {
+                'to_recur': [
+                    {
+                        'name': 'foo',
+                        'age': 3
+                    }, {
+                        'name': 'bar',
+                        'age': 4
+                    }
+                ]
+            },
+            map: {
+                'to_recur[]': {
+                    key: 'recurred[]',
+                    map: {
+                        'name': 'items.name',
+                        'age': 'items.age'
+                    }
+                }
+            },
+            answer: {
+                'recurred': [
+                    {
+                        'items': {
+                            'name': 'foo',
+                            'age': 3
+                        }
+                    },
+                    {
+                        'items': {
+                            'name': 'bar',
+                            'age': 4
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            source: {
+                'true1': 1,
+                'true2': '1',
+                'true3': true,
+                'true4': 'true',
+                'true5': 't',
+                'true6': 'yes',
+                'true7': 'y',
+                'true8': 'TRUE',
+                'true9': 'T',
+                'true10': 'YES',
+                'true11': 'Y',
+                'false1': 0,
+                'false2': '0',
+                'false3': false,
+                'false4': 'false',
+                'false5': 'f',
+                'false6': 'no',
+                'false7': 'n',
+                'false8': 'FALSE',
+                'false9': 'F',
+                'false10': 'NO',
+                'false11': 'N',
+                'false12': '',
+                'false13': null,
+                'false14': 'null',
+                'false15': 'whatever'
+            },
+            map: {
+                'true1': '!!true1',
+                'true2': '!!true2',
+                'true3': '!!true3',
+                'true4': '!!true4',
+                'true5': '!!true5',
+                'true6': '!!true6',
+                'true7': '!!true7',
+                'true8': '!!true8',
+                'true9': '!!true9',
+                'true10': '!!true10',
+                'true11': '!!true11',
+                'false1': '!!false1',
+                'false2': '!!false2',
+                'false3': '!!false3',
+                'false4': '!!false4',
+                'false5': '!!false5',
+                'false6': '!!false6',
+                'false7': '!!false7',
+                'false8': '!!false8',
+                'false9': '!!false9',
+                'false10': '!!false10',
+                'false11': '!!false11',
+                'false12': '!!false12',
+                'false13': '!!false13',
+                'false14': '!!false14',
+                'false15': '!!false15'
+            },
+            answer: {
+                'true1': true,
+                'true2': true,
+                'true3': true,
+                'true4': true,
+                'true5': true,
+                'true6': true,
+                'true7': true,
+                'true8': true,
+                'true9': true,
+                'true10': true,
+                'true11': true,
+                'false1': false,
+                'false2': false,
+                'false3': false,
+                'false4': false,
+                'false5': false,
+                'false6': false,
+                'false7': false,
+                'false8': false,
+                'false9': false,
+                'false10': false,
+                'false11': false,
+                'false12': false,
+                'false13': false,
+                'false14': false,
+                'false15': false
+            }
+        },
+        {
+            source: {
+                'foo': [
+                    {'bar': 1},
+                    {'baz': 2}
+                ]
+            },
+            map: {
+                'foo[]': {
+                    key: 'new_foo[]',
+                    map: {
+                        'bar': 'bar',
+                        'baz': 'baz'
+                    }
+                }
+            },
+            answer: {
+                'new_foo': [
+                    {'bar': 1},
+                    {'baz': 2}
+                ]
+            }
+        },
+        {
+            source: {},
+            map: {
+                '__json-refactor__': {setUndefined: true},
+                'foo': 'foo'
+            },
+            answer: {
+                'foo': null
+            }
+        },
+        {
+            source: [1, 'two', true, ['f', 'o', 'u', 'r'], {no: 5}],
+            map: {
+                '': ''
+            },
+            answer: [1, 'two', true, ['f', 'o', 'u', 'r'], {no: 5}]
+        }
     ];
-    var answer = document.getElementById('answer');
-    testcases.forEach(function (testcase) {
-        var testTarget = {root: true};
-        var result = parser(testTarget, testcase);
-        result.parent[result.key] = 'Success';
-        answer.innerText += testcase + ': ' + JSON.stringify(testTarget) + '\n';
-    });
-    */
-    var source, map, funcArr = [];
-    var test = function (id, answer) {
-        var $test = document.getElementById(id);
-        var $source = $test.querySelector('.source');
-        var $map = $test.querySelector('.map');
-        var $target = $test.querySelector('.target');
-        $source.innerText = JSON.stringify(source, null, 4);
-        $map.innerText = JSON.stringify(map, function (key, val) {
+    tests.forEach(function (test, idx) {
+        var $wrapper = $template.clone();
+        var $source = $wrapper.find('.source');
+        var $map = $wrapper.find('.map');
+        var $target = $wrapper.find('.target');
+        var funcArr = [];
+        var result;
+        $source.html(JSON.stringify(test.source, null, 4));
+        $map.html(JSON.stringify(test.map, function (key, val) {
             if (typeof val == 'function') {
                 funcArr.push(val.toString());
                 return '$func' + (funcArr.length - 1);
             } else {
                 return val;
             }
-        }, 4);
+        }, 4));
         if (funcArr.length > 0) {
-            var text = $map.innerText;
-            funcArr.forEach(function (func, idx) {
-                text = text.replace('"$func' + idx + '"', func);
-            });
-            $map.innerText = text;
-            funcArr = [];
+            $map.html($map.html().replace(/"\$func(\d+)"/g, function (m, id) {
+                return funcArr[id];
+            }));
         }
-        var result = jsonRefactor(source, map);
-        $target.innerText = JSON.stringify(result, null, 4);
-    };
-    var compare = function (a, b) {
-
-    };
+        try {
+            result = jsonRefactor(test.source, test.map);
+        } catch (e) {
+            result = e;
+            console.error(e);
+        }
+        $target.html(JSON.stringify(result, null, 4));
+        if (_.isEqual(result, test.answer)) {
+            $target.addClass('correct');
+        } else {
+            $target.addClass('wrong');
+            console.error('test ' + idx + ' failed.');
+        }
+        $wrapper.removeAttr('id').addClass('test').appendTo($container);
+    });
 </script>
-<div id="case1" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {
-            'old_name': 'Hello world',
-            'should_be_number': '3.14159',
-            'inverse_it': true,
-            'make_it_boolean': 1
-        };
-        map = {
-            'old_name': 'new_name',
-            'should_be_number': '+it_is_number',
-            'inverse_it': '!inversed',
-            'make_it_boolean': '!!it_is_boolean'
-        };
-        test('case1');
-    </script>
-</div>
-<div id="case2" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {
-            'foo': 'hello world'
-        };
-        map = {
-            'foo': function (value) {
-                return {
-                    key: 'bar',
-                    value: value.toUpperCase()
-                };
-            }
-        };
-        test('case2');
-    </script>
-</div>
-<div id="case3" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {
-            'foo': ['hello', 'world'],
-            'bar': {
-                'baz': 'goodbye',
-                'qux': 'yesterday'
-            }
-        };
-        map = {
-            'foo[0]': 'foo.first',
-            'foo[1]': 'foo.second',
-            'bar.baz': 'arr[0]',
-            'bar.qux': 'arr[1]'
-        };
-        test('case3');
-    </script>
-</div>
-<div id="case4" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {
-            'to_recur': [
-                {
-                    'name': 'foo',
-                    'age': 3
-                }, {
-                    'name': 'bar',
-                    'age': 4
-                }
-            ]
-        };
-        map = {
-            'to_recur[]': {
-                key: 'recurred[]',
-                map: {
-                    'name': 'items.name',
-                    'age': 'items.age'
-                }
-            }
-        };
-        test('case4');
-    </script>
-</div>
-<div id="case5" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {
-            'true1': 1,
-            'true2': '1',
-            'true3': true,
-            'true4': 'true',
-            'true5': 't',
-            'true6': 'yes',
-            'true7': 'y',
-            'true8': 'TRUE',
-            'true9': 'T',
-            'true10': 'YES',
-            'true11': 'Y',
-            'false1': 0,
-            'false2': '0',
-            'false3': false,
-            'false4': 'false',
-            'false5': 'f',
-            'false6': 'no',
-            'false7': 'n',
-            'false8': 'FALSE',
-            'false9': 'F',
-            'false10': 'NO',
-            'false11': 'N',
-            'false12': '',
-            'false13': null,
-            'false14': 'null',
-            'false15': 'whatever'
-        };
-        map = {
-            'true1': '!!true1',
-            'true2': '!!true2',
-            'true3': '!!true3',
-            'true4': '!!true4',
-            'true5': '!!true5',
-            'true6': '!!true6',
-            'true7': '!!true7',
-            'true8': '!!true8',
-            'true9': '!!true9',
-            'true10': '!!true10',
-            'true11': '!!true11',
-            'false1': '!!false1',
-            'false2': '!!false2',
-            'false3': '!!false3',
-            'false4': '!!false4',
-            'false5': '!!false5',
-            'false6': '!!false6',
-            'false7': '!!false7',
-            'false8': '!!false8',
-            'false9': '!!false9',
-            'false10': '!!false10',
-            'false11': '!!false11',
-            'false12': '!!false12',
-            'false13': '!!false13',
-            'false14': '!!false14',
-            'false15': '!!false15'
-        };
-        test('case5');
-    </script>
-</div>
-<div id="case6" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {
-            'foo': [
-                {'bar': 1},
-                {'baz': 2}
-            ]
-        };
-        map = {
-            'foo[]': {
-                key: 'new_foo[]',
-                map: {
-                    'bar': 'bar',
-                    'baz': 'baz'
-                }
-            }
-        };
-        test('case6');
-    </script>
-</div>
-<div id="case7" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {};
-        map = {
-            '__json-refactor__': {setUndefined: true},
-            'foo': 'foo'
-        };
-        test('case7');
-    </script>
-</div>
-
-<!--
-<div id="case" class="test">
-    <pre class="source"></pre>
-    <pre class="map"></pre>
-    <pre class="target"></pre>
-    <script>
-        source = {};
-        map = {};
-        test('case');
-    </script>
-</div>
--->
