@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "babel src --plugins transform-es2015-modules-commonjs -d ../debug/transpiled --source-maps",
-    "test": "mocha --compilers js:babel-core/register",
+    "test": "mocha --compilers js:babel-core/register test/refactor.spec.js",
     "test2": "npm run compile && qunit-cli test/refactor.es5.js && npm run lint",
     "lint": "eslint json-refactor.js",
     "compile": "babel json-refactor.js --out-file json-refactor.es5.js && babel test/refactor.js --out-file test/refactor.es5.js"
