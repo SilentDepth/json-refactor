@@ -12,13 +12,7 @@ function jsonRefactor(source, map, target = {}) {
 
   Reflect.ownKeys(map).filter(key => key !== CONFIG_KEY).forEach(sourceKey => {
     let got = getter(source, sourceKey);
-    if (got === undefined) {
-      if (setUndefined) {
-        got = {value: undefined};
-      } else {
-        return;
-      }
-    }
+    if (got.value === undefined && !setUndefined) return;
     if (got.needIteration) {
       got.value.forEach(source => {
         let refactored = jsonRefactor(source, map[sourceKey].map);

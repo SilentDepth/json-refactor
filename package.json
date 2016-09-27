@@ -17,7 +17,8 @@
     "test": "mocha --compilers js:babel-core/register test/refactor.spec.js",
     "test2": "npm run compile && qunit-cli test/refactor.es5.js && npm run lint",
     "lint": "eslint json-refactor.js",
-    "compile": "babel json-refactor.js --out-file json-refactor.es5.js && babel test/refactor.js --out-file test/refactor.es5.js"
+    "compile": "babel json-refactor.js --out-file json-refactor.es5.js && babel test/refactor.js --out-file test/refactor.es5.js",
+    "transpile": "babel src --out-dir debug/__transpiled__ --source-maps && babel debug/debug.js --out-file debug/__transpiled__/debug.js --source-maps"
   },
   "repository": {
     "type": "git",

@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import jsonRefactor from '../src/index.js';
 
 const testcases = [
+  // 0
   {
     source: {
       'old_name': 'Hello world',
@@ -23,6 +24,7 @@ const testcases = [
       'it_is_boolean': true
     }
   },
+  // 1
   {
     source: {
       'foo': 'hello world'
@@ -39,6 +41,7 @@ const testcases = [
       'bar': 'HELLO WORLD'
     }
   },
+  // 2
   {
     source: {
       'foo': ['hello', 'world'],
@@ -61,6 +64,7 @@ const testcases = [
       'arr': ['goodbye', 'yesterday']
     }
   },
+  // 3
   {
     source: {
       'to_recur': [
@@ -99,6 +103,7 @@ const testcases = [
       ]
     }
   },
+  // 4
   {
     source: {
       'true1': 1,
@@ -185,6 +190,7 @@ const testcases = [
       'false15': false
     }
   },
+  // 5
   {
     source: {
       'foo': [
@@ -208,6 +214,7 @@ const testcases = [
       ]
     }
   },
+  // 6
   {
     source: {},
     map: {
@@ -218,6 +225,7 @@ const testcases = [
       'foo': null
     }
   },
+  // 7
   {
     source: [1, 'two', true, ['f', 'o', 'u', 'r'], { no: 5 }],
     map: {
