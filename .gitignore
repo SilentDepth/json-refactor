@@ -1,6 +1,13 @@
+.gitignore
+node_modules/
+debug/
+
 # Sublime Text project files
 *.sublime-*
 
 # JetBrains IDE project files
-.idea
+.idea/
 *.iml
+
+# VS Code project files
+.vscode/
