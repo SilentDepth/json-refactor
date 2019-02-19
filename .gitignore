@@ -10,4 +10,6 @@
 
 # node.js & npm
 node_modules/
+
+dist/
 debug/
