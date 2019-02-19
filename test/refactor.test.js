@@ -1,6 +1,4 @@
-import {expect} from 'chai';
-
-import jsonRefactor from '../src/index.js';
+import jsonRefactor from '../src'
 
 const testcases = [
   // 0
@@ -34,7 +32,7 @@ const testcases = [
         return {
           key: 'bar',
           value: value.toUpperCase()
-        };
+        }
       }
     },
     answer: {
@@ -232,13 +230,13 @@ const testcases = [
       '': ''
     },
     answer: [1, 'two', true, ['f', 'o', 'u', 'r'], { no: 5 }]
-  }
-];
+  },
+]
 
-describe('JSON Refactor Test', function () {
+describe('JSON Refactor Test', () => {
   testcases.forEach((testcase, idx) => {
-    it(`Testcase ${idx}`, function () {
-      expect(jsonRefactor(testcase.source, testcase.map)).deep.equal(testcase.answer);
-    });
-  });
-});
+    test(`Testcase ${idx}`, () => {
+      expect(jsonRefactor(testcase.source, testcase.map)).toEqual(testcase.answer)
+    })
+  })
+})
